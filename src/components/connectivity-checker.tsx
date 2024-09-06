@@ -7,9 +7,8 @@ import { Loader2, Wifi, WifiOff, Cloud, CloudOff } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function ConnectivityChecker() {
-
   const [isChecking, setIsChecking] = useState(false)
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [isOnline, setIsOnline] = useState(true)
   const [lastChecked, setLastChecked] = useState<Date | null>(null)
   const [hasConnectedOnce, setHasConnectedOnce] = useState(false)
   const audioContext = useRef<AudioContext | null>(null)
@@ -37,14 +36,18 @@ export default function ConnectivityChecker() {
 
   const checkConnectivity = useCallback(async () => {
     const online = navigator.onLine
-    try {
-      const response = await fetch('https://www.google.com', { mode: 'no-cors', cache: 'no-store' })
-      if (!isOnline && !hasConnectedOnce) {
-        playConnectedSound()
-        setHasConnectedOnce(true)
+    if (online) {
+      try {
+        const response = await fetch('https://www.google.com', { mode: 'no-cors', cache: 'no-store' })
+        if (!isOnline && !hasConnectedOnce) {
+          playConnectedSound()
+          setHasConnectedOnce(true)
+        }
+        setIsOnline(true)
+      } catch (error) {
+        setIsOnline(false)
       }
-      setIsOnline(true)
-    } catch (error) {
+    } else {
       setIsOnline(false)
     }
     setLastChecked(new Date())
@@ -60,8 +63,16 @@ export default function ConnectivityChecker() {
       clearInterval(interval)
     }
 
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
     return () => {
       if (interval) clearInterval(interval)
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
   }, [isChecking, checkConnectivity])
 
@@ -71,7 +82,6 @@ export default function ConnectivityChecker() {
       setHasConnectedOnce(false) // Reset the flag when starting a new check
     }
   }
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
@@ -142,7 +152,7 @@ export default function ConnectivityChecker() {
           </motion.p>
         )}
 
-        {/* <motion.div 
+        {/* <motion.div
           className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
           animate={{ y: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
