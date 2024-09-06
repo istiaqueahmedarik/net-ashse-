@@ -6,7 +6,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Loader2, Wifi, WifiOff, Cloud, CloudOff } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
-export function ConnectivityChecker() {
+export default function ConnectivityChecker() {
+
   const [isChecking, setIsChecking] = useState(false)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [lastChecked, setLastChecked] = useState<Date | null>(null)
@@ -70,6 +71,7 @@ export function ConnectivityChecker() {
       setHasConnectedOnce(false) // Reset the flag when starting a new check
     }
   }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-400 via-pink-500 to-red-500">
