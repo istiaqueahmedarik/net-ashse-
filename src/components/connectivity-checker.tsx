@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Loader2, Cloud, CloudOff } from "lucide-react"
+import { Loader2, Wifi, WifiOff, Cloud, CloudOff } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function ConnectivityChecker() {
@@ -56,31 +56,21 @@ export default function ConnectivityChecker() {
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
 
-    const runCheck = () => {
-      checkConnectivity()
-      if (isChecking) {
-        interval = setTimeout(runCheck, 10000) // Check every 10 seconds
-      }
-    }
-
     if (isChecking) {
-      runCheck()
+      checkConnectivity()
+      interval = setInterval(checkConnectivity, 10000) // Check every 10 seconds
+    } else if (interval) {
+      clearInterval(interval)
     }
 
-    const handleOnline = () => {
-      setIsOnline(true)
-      if (isChecking) runCheck()
-    }
-    const handleOffline = () => {
-      setIsOnline(false)
-      if (isChecking) runCheck()
-    }
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
     return () => {
-      if (interval) clearTimeout(interval)
+      if (interval) clearInterval(interval)
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
@@ -161,6 +151,18 @@ export default function ConnectivityChecker() {
             Last checked: {lastChecked.toLocaleTimeString()}
           </motion.p>
         )}
+
+        {/* <motion.div
+          className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
+          {isOnline ? (
+            <Wifi className="h-8 w-8 text-white" />
+          ) : (
+            <WifiOff className="h-8 w-8 text-white" />
+          )}
+        </motion.div> */}
       </motion.div>
     </div>
   )
